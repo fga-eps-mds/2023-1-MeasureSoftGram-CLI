@@ -9,14 +9,17 @@ from rich import print
 from src.cli.exceptions import exceptions
 
 REQUIRED_SONAR_JSON_KEYS = ["paging", "baseComponent", "components"]
+REQUIRED_SONAR_BASE_COMPONENT_KEYS = ["id", "key", "name", "qualifier", "measures"]
 REQUIRED_TRK_MEASURES = ["test_failures", "test_errors", "files", "ncloc"]
-REQUIRED_SONAR_BASE_COMPONENT_KEYS = [
-    "id",
-    "key",
-    "name",
-    "qualifier",
-    "measures",
+REQUIRED_UTS_MEASURES = ["tests", "test_execution_time"]
+REQUIRED_FIL_MEASURES = [
+    "coverage",
+    "complexity",
+    "functions",
+    "comment_lines_density",
+    "duplicated_lines_density",
 ]
+
 
 
 def file_reader(path_file):
@@ -80,16 +83,27 @@ def get_missing_keys_str(attrs, required_attrs):
     return ", ".join(missing_keys)
 
 
+
 def check_sonar_format(json_data):
+    components = json_data.get("components")
+
+    if isinstance(components, type(None)):
+        raise exceptions.InvalidMetricsJsonFile("Json sonar components do not exist.")
+
+    if len(components) == 0:
+        raise exceptions.InvalidMetricsJsonFile("Json sonar components TRK and FIL empty.")
+
+    base_component = json_data["baseComponent"]
+    if len(base_component) == 0:
+        raise exceptions.InvalidMetricsJsonFile("Json sonar baseComponent TRK empty.")
+
     attributes = list(json_data.keys())
     missing_keys = get_missing_keys_str(attributes, REQUIRED_SONAR_JSON_KEYS)
-
     if len(missing_keys) > 0:
         raise exceptions.InvalidMetricsJsonFile(
             f"Invalid Sonar JSON keys. Missing keys are: {missing_keys}"
         )
 
-    base_component = json_data["baseComponent"]
     base_component_attrs = list(base_component.keys())
     missing_keys = get_missing_keys_str(base_component_attrs, REQUIRED_SONAR_BASE_COMPONENT_KEYS)
 
@@ -104,11 +118,32 @@ def check_sonar_format(json_data):
 
     if len(missing_keys) > 0:
         raise exceptions.InvalidMetricsJsonFile(
-            f"Invalid Sonar baseComponent TRK measures. Missing keys are: {missing_keys}"
+            f"Invalid Sonar baseComponent TRK measures. Missing keys: {missing_keys}"
         )
 
-    if len(json_data["components"]) == 0:
-        raise exceptions.InvalidMetricsJsonFile("File with valid schema but no metrics data.")
+    required_fil_measure = REQUIRED_FIL_MEASURES
+    for component in components:
+        if component["qualifier"] == "FIL":
+            for measure in component["measures"]:
+                if measure["metric"] in required_fil_measure:
+                    required_fil_measure.remove(measure["metric"])
+
+    if len(required_fil_measure) > 0:
+        raise exceptions.InvalidMetricsJsonFile(
+            f"Invalid Sonar components FIL measures. Missing keys: {required_fil_measure}"
+        )
+
+    required_uts_measure = REQUIRED_UTS_MEASURES
+    for component in components:
+        if component["qualifier"] == "UTS":
+            for measure in component["measures"]:
+                if measure["metric"] in required_uts_measure:
+                    required_uts_measure.remove(measure["metric"])
+
+    if len(required_uts_measure) > 0:
+        raise exceptions.InvalidMetricsJsonFile(
+            f"Invalid Sonar components UTS measures. Missing keys: {required_uts_measure}"
+        )
 
 
 def check_file_extension(file_name):
@@ -174,3 +209,4 @@ def validade_infos_from_name(filename):
     if not (re.match(regex1, filename[1]) or re.match(regex2, filename[1])):
         raise exceptions.NameFileFormatInvalid(
             "Unable to extract valid creation date from file name."
+        )

@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.prompt import Confirm
 from staticfiles import DEFAULT_PRE_CONFIG
 
-from src.cli.utils import print_error, print_info, print_panel, print_rule
+from src.cli.utils import print_error, print_info, print_panel, print_rule, print_warn
 from src.config.settings import FILE_CONFIG
 
 logger = logging.getLogger("msgram")
@@ -30,14 +30,16 @@ def command_init(args):
     print_rule("MSGram", "[#708090]Init to set config file[/]:")
 
     if not config_path.exists():
-        print_info(f"Created dir: {config_path}")
+        print_info(f"[yellow]➤[/] [#4F4F4F]Created directory:[/] {config_path}")
         config_path.mkdir()
 
     replace = True
 
     if file_path.exists():
-        print_info(f"MSGram config file [bold red]'{FILE_CONFIG}'[/] exists already!")
-        replace = Confirm.ask(f"> Do you want to replace [bold blue]'{FILE_CONFIG}'[/]?")
+        print_info(
+            f"[yellow]➤[/][#4F4F4F] MSGram config file [yellow]{FILE_CONFIG}[/] exists already!"
+        )
+        replace = Confirm.ask("[yellow]➤[/][#4F4F4F] Do you want to replace?")
 
     if replace:
         try:
@@ -46,11 +48,16 @@ def command_init(args):
         except OSError:
             console.line(2)
             print_error("Error opening or writing to file")
-        print_info(f"The file config: '{config_path.name}/msgram.json' was created successfully.")
+        print_info(
+            f"[yellow]➤[/][#4F4F4F] The config file:[blue] {FILE_CONFIG}[/] was[/] created successfully."
+        )
 
     else:
-        print_info(f"The file config: '{config_path.name}/msgram.json' not changed...")
+        print_warn(
+            f"[yellow]➤[/][#4F4F4F] The config file:[/][blue] {FILE_CONFIG}[/] has not been changed..."
+        )
 
     print_panel(
-        "> [#008080]Run msgram extract -o sonarqube -dp data_path -ep extract_path[/], to extract supported metrics!"
+        "[yellow]➤[/] Extract supported metrics:\n"
+        "[yellow]$[/] [#099880]msgram extract -o sonarqube -dp [purple]<data_path>[/] -ep [purple]<extract_path>[/][/]"
     )

@@ -40,8 +40,13 @@ def command_extract(args):
     print_rule("Extract metrics")
 
     if not os.path.isdir(extracted_path):
-        logger.error(f'FileNotFoundError: extract directory "{extracted_path}" does not exists')
-        print_warn(f"FileNotFoundError: extract directory[blue]'{extracted_path}'[/]does not exists")
+        print_error(f"The file or dir was not found: [blue]{extracted_path}[/]")
+
+        print_panel(
+            title="Tips",
+            menssage="[yellow]➤[/] To initialize config file and dir that are used in the following commands:\n"
+            "[yellow]$[/] [#008080]msgram init -cp [purple]<config_path>[/]",
+        )
         sys.exit(1)
 
     logger.debug(f"output_origin: {output_origin}")
@@ -79,9 +84,12 @@ def command_extract(args):
 
         time_extract = perf_counter() - time_init
         print_info(
-            f"\n\nMetrics successfully extracted [[blue bold]{valid_files}/{len(files)} "
-            f"files - {time_extract:0.2f} seconds[/]]!"
+            f"\n\nMetrics successfully extracted! [black][[blue]{valid_files}[/]/[blue]{status.total}[/] "
+            f"- [white]{time_extract:0.1f}s[/]]"
         )
     print_panel(
-        "> Run [#008080]msgram calculate all -ep 'extracted_path' -cp 'extracted_path' -o 'output_origin'"
+        "[yellow]➤[/] Calculate quality of extracted files and export as (CSV or JSON):\n"
+        "[yellow]$[/] [#008080]msgram calculate all -ep [purple]<extracted_path>[/]"
+        "-cp [purple]<config_path>[/] -o [purple]<output_origin>"
     )
+

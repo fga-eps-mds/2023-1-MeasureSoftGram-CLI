@@ -1,6 +1,7 @@
 import json
 import math
 from pathlib import Path
+import re
 
 import rich.progress
 from rich import print
@@ -143,3 +144,33 @@ def validate_metrics_post(response_status):
         return "OK: Metrics uploaded successfully"
 
     return f"FAIL: The host service server returned a {response_status} error. Trying again"
+
+
+def get_filename_fixed(filename):
+    re_filename = re.sub("[^a-zA-Z0-9\s]", "-", filename)
+    re_filename = re_filename.replace(" ", "")
+
+    try:
+        version = re.search(r"\d{1,2}-\d{1,2}-\d{4}-\d{1,2}-\d{1,2}-\d{1,2}", re_filename)[0]
+        repository = re_filename.split(version)[0][:-1]
+
+    except Exception:
+        return ["repository", "version"]
+
+    return [repository, version]
+
+
+def validade_infos_from_name(filename):
+    """
+    Formato valido: MM-DD-YYYY-HH-MM-SS ou DD-MM-YYYY-HH-MM-SS  (dia e mes pode ter um ou dois digtos)
+    """
+
+    regex1 = "^([1-9]|0[1-9]|1\d|2\d|3[01])\-(0[1-9]|[1-9]|1[0-2])\-(19|20)\d{2}\-([0-1]?\d|2[0-3])-([0-5]?\d)-([0-5]?\d)$"
+    regex2 = "^(0[1-9]|[1-9]|1[0-2])\-([1-9]|0[1-9]|1\d|2\d|3[01])\-(19|20)\d{2}\-([0-1]?\d|2[0-3])-([0-5]?\d)-([0-5]?\d)$"
+
+    if len(filename[0]) < 2:
+        raise exceptions.NameFileFormatInvalid("Unable to extract repository name from file name.")
+
+    if not (re.match(regex1, filename[1]) or re.match(regex2, filename[1])):
+        raise exceptions.NameFileFormatInvalid(
+            "Unable to extract valid creation date from file name."

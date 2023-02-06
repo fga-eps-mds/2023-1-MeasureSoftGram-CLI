@@ -3,36 +3,24 @@ import logging
 import os
 import re
 import sys
-from time import perf_counter
+from time import perf_counter, sleep
 
 from parsers.sonarqube import Sonarqube
 from rich import print
 from rich.console import Console
 
 from src.cli.jsonReader import folder_reader
-from src.cli.utils import make_progress_bar, print_info, print_panel, print_rule, print_warn
+from src.cli.utils import (
+    make_progress_bar,
+    print_error,
+    print_info,
+    print_panel,
+    print_rule,
+    print_warn,
+)
 
 logger = logging.getLogger("msgram")
-
-
-def get_infos_from_name(filename: str) -> str:
-    """
-    filename: str = fga-eps-mds-2022-1-MeasureSoftGram-Service-09-11-2022-16-11-42-develop.json
-    """
-    file_date = re.search(r"\d{1,2}-\d{1,2}-\d{4}-\d{1,2}-\d{1,2}", filename)
-
-    if not file_date:
-        message = (
-            "Could not extract creation date from file. Was the file name "
-            "to contain a date in the format dd-mm-yyyy-hh-mm"
-        )
-        print_warn(message)
-        print_warn(f"filename: {filename}")
-        sys.exit(1)
-
-    file_name = filename.split(".")[0]
-
-    return f"{file_name}-extracted.msgram"
+console = Console()
 
 
 def command_extract(args):
@@ -48,7 +36,6 @@ def command_extract(args):
         print_warn(f"KeyError: args[{e}] - non-existent parameters")
         exit(1)
 
-    console = Console()
     console.clear()
     print_rule("Extract metrics")
 
@@ -62,30 +49,33 @@ def command_extract(args):
     logger.debug(f"language_extension: {language_extension}")
 
     files = list(data_path.glob("*.json"))
-    valid_files = len(files)
     parser = Sonarqube() if output_origin == "sonarqube" else None
 
-    print_info(f"\n> Extract and save metrics [[blue ]{output_origin}[/]]:")
+    print_info(f"\n[yellow]➤[/] [black]Extract and save metrics [[blue ]{output_origin}[/]]:\n")
+
     with make_progress_bar() as progress_bar:
-
         task_request = progress_bar.add_task("[#A9A9A9]Extracting files: ", total=len(files))
-        progress_bar.advance(task_request)
+        status = progress_bar.tasks[task_request]
+        valid_files = 0
+        first_request = True
 
-        for component, filename, files_error in folder_reader(data_path, "json"):
-            if files_error:
-                progress_bar.update(task_request, advance=files_error)
-                valid_files = valid_files - files_error
+        for json_data, filename in folder_reader(data_path, "json"):
+            if json_data is not None:
+                file_path = f"{extracted_path}/{filename}.msgram"
+                result = parser.extract_supported_metrics(json_data, first_request)
 
-            name = get_infos_from_name(filename)
-            result = parser.extract_supported_metrics(component)
+                with open(file_path, "w") as f:
+                    f.write(json.dumps(result, indent=4))
+                    print(f"[dark_green]Save   :[/] [black]{filename}.msgram[/]\n")
+                    valid_files += 1
 
-            print(f"[dark_green]Reading:[/] [black]{filename}[/]")
-            print(f"[dark_green]Save   :[/] [black]{name}[/]\n")
-
-            with open(f"{extracted_path}/{name}", "w") as f:
-                f.write(json.dumps(result, indent=4))
-
-            progress_bar.advance(task_request)
+                first_request = False
+            progress_bar.update(
+                task_request,
+                advance=1,
+                description=f"[white]Extracting files ([red]{status.completed + 1}[/]|[blue]{status.total}[/]) ",
+            )
+            sleep(0.1)
 
         time_extract = perf_counter() - time_init
         print_info(

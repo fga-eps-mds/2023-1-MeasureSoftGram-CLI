@@ -22,17 +22,6 @@ REQUIRED_FIL_MEASURES = [
 
 
 
-def file_reader(path_file):
-    json_data = open_json_file(path_file, True)
-
-    check_sonar_format(json_data)
-    check_metrics_values(json_data)
-
-    components = json_data["components"]
-    components.append(json_data["baseComponent"])
-    return components
-
-
 def read_mult_files(directory: Path, pattern: str):
     for path_file in directory.glob(f"*.{pattern}"):
         try:
@@ -42,18 +31,32 @@ def read_mult_files(directory: Path, pattern: str):
 
 
 def folder_reader(dir_path, pattern):
-    num_files_error = 0
     if not list(dir_path.glob(f"*.{pattern}")):
         raise exceptions.MeasureSoftGramCLIException(f"No files .{pattern} found inside folder.")
 
     for path_file in dir_path.glob(f"*.{pattern}"):
+        print(f"[green]Reading:[/] [black]{path_file.name}[/]")
+
+        components = None
+        filename = get_filename_fixed(path_file.stem)
+
         try:
-            yield file_reader(path_file), path_file.name, num_files_error
-            num_files_error = 0
-        except exceptions.MeasureSoftGramCLIException as e:
-            print(f"[green]Reading:[/] [black]{path_file.name}[/]")
-            print(f"[red]Error  : {e}\n")
-            num_files_error += 1
+            validade_infos_from_name(filename)
+            json_data = open_json_file(path_file, True)
+            check_sonar_format(json_data)
+            check_metrics_values(json_data)
+
+        except exceptions.MeasureSoftGramCLIException as error:
+            print(f"[red]Error  : {error}\n")
+            components = None
+
+        else:
+            components = json_data["components"]
+            components.append(json_data["baseComponent"])
+            filename = "-".join(filename)
+        finally:
+            yield components, filename
+
 
 
 def open_json_file(path_file: Path, disable=False):

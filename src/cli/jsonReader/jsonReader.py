@@ -22,7 +22,6 @@ REQUIRED_FIL_MEASURES = [
 ]
 
 
-
 def read_mult_files(directory: Path, pattern: str):
     for path_file in directory.glob(f"*.{pattern}"):
         try:
@@ -59,7 +58,6 @@ def folder_reader(dir_path, pattern):
             yield components, filename
 
 
-
 def open_json_file(path_file: Path, disable=False):
     try:
         with rich.progress.open(
@@ -87,8 +85,7 @@ def get_missing_keys_str(attrs, required_attrs):
     return ", ".join(missing_keys)
 
 
-
-def check_sonar_format(json_data):
+def check_sonar_format(json_data):   # noqa: C901
     components = json_data.get("components")
 
     if isinstance(components, type(None)):
@@ -186,7 +183,7 @@ def validate_metrics_post(response_status):
 
 
 def get_filename_fixed(filename):
-    re_filename = re.sub("[^a-zA-Z0-9\s]", "-", filename)
+    re_filename = re.sub(r"[^a-zA-Z0-9\s]", "-", filename)
     re_filename = re_filename.replace(" ", "")
 
     try:
@@ -204,8 +201,8 @@ def validade_infos_from_name(filename):
     Formato valido: MM-DD-YYYY-HH-MM-SS ou DD-MM-YYYY-HH-MM-SS  (dia e mes pode ter um ou dois digtos)
     """
 
-    regex1 = "^([1-9]|0[1-9]|1\d|2\d|3[01])\-(0[1-9]|[1-9]|1[0-2])\-(19|20)\d{2}\-([0-1]?\d|2[0-3])-([0-5]?\d)-([0-5]?\d)$"
-    regex2 = "^(0[1-9]|[1-9]|1[0-2])\-([1-9]|0[1-9]|1\d|2\d|3[01])\-(19|20)\d{2}\-([0-1]?\d|2[0-3])-([0-5]?\d)-([0-5]?\d)$"
+    regex1 = r"^([1-9]|0[1-9]|1\d|2\d|3[01])\-(0[1-9]|[1-9]|1[0-2])\-(19|20)\d{2}\-([0-1]?\d|2[0-3])-([0-5]?\d)-([0-5]?\d)$"  # noqa: E501
+    regex2 = r"^(0[1-9]|[1-9]|1[0-2])\-([1-9]|0[1-9]|1\d|2\d|3[01])\-(19|20)\d{2}\-([0-1]?\d|2[0-3])-([0-5]?\d)-([0-5]?\d)$"  # noqa: E501
 
     if len(filename[0]) < 2:
         raise exceptions.NameFileFormatInvalid("Unable to extract repository name from file name.")

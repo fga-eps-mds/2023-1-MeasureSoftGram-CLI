@@ -40,9 +40,9 @@ def calculate_measures(json_data):
 
     try:
         return core_calculate({"measures": calculate_infos})
-    except Exception as error:
+    except Exception:
         print(
-            f"[red]Error: Calculate non-comples files density (EM1): Complexity "
+            "[red]Error: Calculate non-comples files density (EM1): Complexity "
             "and Functions are not equal size of the lists. {error}"
         )
         return None

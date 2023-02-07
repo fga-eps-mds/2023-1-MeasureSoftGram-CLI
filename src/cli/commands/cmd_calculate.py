@@ -1,7 +1,6 @@
 import csv
 import json
 import logging
-import re
 import sys
 from pathlib import Path
 
@@ -23,7 +22,7 @@ from src.config.settings import DEFAULT_CONFIG_PATH, FILE_CONFIG
 logger = logging.getLogger("msgram")
 
 
-def command_calculate(args):
+def command_calculate(args):  # noqa: C901
     try:
         output_format: str = args["output_format"]
         config_path: Path = args["config_path"]
@@ -34,7 +33,7 @@ def command_calculate(args):
         exit(1)
 
     console = Console()
-    # console.clear()
+    console.clear()
     print_rule("Calculate")
     print_info("[yellow]➤[/] [black]Reading config file:[/]\n")
 
@@ -82,7 +81,8 @@ def command_calculate(args):
     if len(data_calculated) == 0:
         msg_tips = (
             "[yellow]➤[/] To Extract supported metrics:\n"
-            "[yellow]$[/] [#099880]msgram extract -o sonarqube -dp [purple]<data_path>[/] -ep [purple]<extract_path>[/][/]"
+            "[yellow]$[/] [#099880]msgram extract -o sonarqube -dp [purple]<data_path>[/]"
+            "-ep [purple]<extract_path>[/][/]"
         )
 
     else:
@@ -114,7 +114,6 @@ def calculate_all(json_data, file_name, config):
         "characteristics": data_characteristics["characteristics"],
         "sqc": data_sqc["sqc"],
     }
-
 
 
 def show_results(output_format, data_calculated, config_path):

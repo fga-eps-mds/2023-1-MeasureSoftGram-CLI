@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import re
 import sys
 from time import perf_counter, sleep
 
@@ -92,4 +91,3 @@ def command_extract(args):
         "[yellow]$[/] [#008080]msgram calculate all -ep [purple]<extracted_path>[/]"
         "-cp [purple]<config_path>[/] -o [purple]<output_origin>"
     )
-

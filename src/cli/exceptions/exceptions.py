@@ -78,6 +78,7 @@ class ConfigFileFormatInvalid(MeasureSoftGramCLIException):
 
     pass
 
+
 class NameFileFormatInvalid(MeasureSoftGramCLIException):
     """Raised when the file name is not in the correct format"""
 

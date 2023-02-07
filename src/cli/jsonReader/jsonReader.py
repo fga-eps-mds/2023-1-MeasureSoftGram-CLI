@@ -2,6 +2,7 @@ import json
 import math
 from pathlib import Path
 import re
+from copy import deepcopy
 
 import rich.progress
 from rich import print
@@ -124,7 +125,7 @@ def check_sonar_format(json_data):
             f"Invalid Sonar baseComponent TRK measures. Missing keys: {missing_keys}"
         )
 
-    required_fil_measure = REQUIRED_FIL_MEASURES
+    required_fil_measure = deepcopy(REQUIRED_FIL_MEASURES)
     for component in components:
         if component["qualifier"] == "FIL":
             for measure in component["measures"]:
@@ -136,7 +137,7 @@ def check_sonar_format(json_data):
             f"Invalid Sonar components FIL measures. Missing keys: {required_fil_measure}"
         )
 
-    required_uts_measure = REQUIRED_UTS_MEASURES
+    required_uts_measure = deepcopy(REQUIRED_UTS_MEASURES)
     for component in components:
         if component["qualifier"] == "UTS":
             for measure in component["measures"]:

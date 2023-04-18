@@ -77,3 +77,9 @@ class ConfigFileFormatInvalid(MeasureSoftGramCLIException):
     """Raised when the config file is invalid"""
 
     pass
+
+
+class NameFileFormatInvalid(MeasureSoftGramCLIException):
+    """Raised when the file name is not in the correct format"""
+
+    pass

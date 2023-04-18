@@ -1,4 +1,5 @@
 import logging
+from rich import print
 
 from resources import calculate_measures as core_calculate
 from staticfiles import SONARQUBE_SUPPORTED_MEASURES
@@ -37,5 +38,11 @@ def calculate_measures(json_data):
             }
         )
 
-    headers = ["Id", "Name", "Description", "Value", "Created at"]
-    return core_calculate({"measures": calculate_infos}), headers
+    try:
+        return core_calculate({"measures": calculate_infos})
+    except Exception:
+        print(
+            "[red]Error: Calculate non-comples files density (EM1): Complexity "
+            "and Functions are not equal size of the lists. {error}"
+        )
+        return None

@@ -27,5 +27,4 @@ def calculate_characteristics(config, subchars):
             'subcharacteristics': get_subcharacteristic_value(subchars, char['subcharacteristics'])
         })
 
-    headers = ["Id", "Name", "Description", "Value", "Created at"]
-    return core_calculate({'characteristics': calculate_infos}), headers
+    return core_calculate({'characteristics': calculate_infos})

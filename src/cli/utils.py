@@ -7,7 +7,7 @@ from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 from rich.table import Table
 
 logger = logging.getLogger("msgram")
-console = Console(highlight=False, soft_wrap=False, width=140)
+console = Console(highlight=False, soft_wrap=False, width=100)
 
 
 def print_info(text: str):
@@ -91,6 +91,6 @@ def print_panel(menssage: str, title: str = "Next steps"):
             style="#4F4F4F",
             border_style="#A9A9A9",
             padding=(1, 2),
-            width=140,
+            width=100,
         ),
     )
